@@ -29,7 +29,7 @@ module cpu(input clk, input rst_n, input start, input [15:0] instr, input [7:0] 
 		w,
 		reg_sel, wb_sel, w_en, load_ir, load_pc, clear_pc, load_addr,
 		en_A, en_B, en_C, en_status, ram_w_en,
-		sel_A, sel_B);
+		sel_A, sel_B, sel_addr);
 		
   // Modified datapath
   datapath d(clk, ram_r_data, pc, wb_sel,
@@ -42,7 +42,7 @@ module cpu(input clk, input rst_n, input start, input [15:0] instr, input [7:0] 
   always_ff @(posedge clk) begin
     // Load instruction (2)
 	if (load_ir)
-	  f_instr <= instr;
+	  f_instr <= ram_r_data;
 	  
 	// Load PC(3)
 	if (load_pc)
