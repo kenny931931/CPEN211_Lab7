@@ -4,7 +4,7 @@ module controller(input clk, input rst_n, input start,
                   output reg waiting,
                   output reg [1:0] reg_sel, output reg[1:0] wb_sel, output reg w_en, output reg load_ir, output reg load_pc, output reg clear_pc, output reg load_addr
                   output reg en_A, output reg en_B, output reg en_C, output reg en_status, output reg rm_w_en,
-                  output reg sel_A, output reg sel_B);
+                  output reg sel_A, output reg sel_B. output reg sel_addr);
 
 //write to Rd
 `define enable 4'd0
