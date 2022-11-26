@@ -4,10 +4,10 @@ module task1(input clk, input rst_n, input [7:0] start_pc, output[15:0] out);
   wire [7:0] ram_addr;
   wire [15:0] ram_r_data, ram_w_data;
   
-  cpu(clk, rst_n, start_pc, ram_r_data,
+  cpu c(clk, rst_n, start_pc, ram_r_data,
 	  waiting, out, ram_w_en, ram_addr, N, V, Z);
   
-  ram(clk, ram_w_en, ram_addr, ram_addr, ram_w_data, ram_r_data);
+  ram r(clk, ram_w_en, ram_addr, ram_addr, ram_w_data, ram_r_data);
   
 endmodule: task1
 
@@ -39,7 +39,7 @@ module cpu(input clk, input rst_n, input [7:0] start_pc, input [15:0] ram_r_data
   controller c(clk, rst_n,
         opcode, op, shift_op,
 		z, n, v,
-		w,
+		
 		reg_sel, wb_sel, w_en, load_ir, load_pc, clear_pc, load_addr,
 		en_A, en_B, en_C, en_status, ram_w_en,
 		sel_A, sel_B, sel_addr);
@@ -273,7 +273,7 @@ module datapath(input clk, input [15:0] mdata, input [7:0] pc, input [1:0] wb_se
   assign V_out = flag[0];
   
   // register file
-  regfile r(w_data, w_addr, w_en, r_addr, clk, r_data);
+  regfile r(clk, w_data, w_addr, w_en, r_addr, r_data);
   // shifter
   shifter s(reg_B, shift_op, shift_out);
   // ALU
