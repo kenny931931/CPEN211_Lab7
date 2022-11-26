@@ -105,18 +105,154 @@ endmodule: idecoder
 module controller(input clk, input rst_n,
                   input [2:0] opcode, input [1:0] ALU_op, input [1:0] shift_op,
                   input Z, input N, input V,
-                  output reg waiting,
-                  output reg [1:0] reg_sel, output reg[1:0] wb_sel, output reg w_en, output reg load_ir, output reg load_pc, output reg clear_pc, output reg load_addr,
-                  output reg en_A, output reg en_B, output reg en_C, output reg en_status, output reg rm_w_en,
+            
+                  output reg [1:0] reg_sel, output reg[1:0] wb_sel, output reg w_en, output reg load_ir,
+                  output reg load_pc, output reg clear_pc, output reg load_addr,
+                  output reg en_A, output reg en_B, output reg en_C, output reg en_status, output reg ram_w_en,
                   output reg sel_A, output reg sel_B, output reg sel_addr);
-				  
-				  
-				  
-				  
-				  
-				  
-				  
-				  
+
+
+`define enable 4'd0
+`define loadB 4'd1
+`define loadA 4'd2
+`define movI_one 4'd3
+`define finish 4'd4
+
+`define mov1 4'd5
+`define mov2 4'd6
+
+`define cal 4'd7
+
+`define wait 4'd8
+
+//after reset states
+`define rst1 4'd9
+`define rst2 4'd10
+`define rst3 4'd11
+`define rst4 4'd12
+
+reg [3:0] next;
+reg signal =0;
+reg [3:0] state;
+reg [4:0] instruction;
+assign state = next;
+reg waiting; 
+reg halt; 
+
+reg reset_en; 
+
+
+always_ff @( posedge clk ) begin 
+
+    //if reset is hit, begin the reset fetch sequence 
+		if (~rst_n) begin 
+        signal <= 1'b0;
+        en_status <= 0; //maybe change
+        next <= `rst1;
+        w_en <= 1'b0;
+         wb_sel <= 2'b00;
+          en_A <= 1'b0;
+         en_B <= 1'b0;
+         sel_A <= 1'b0;
+         sel_B <= 1'b0;
+         en_status <= 1'b0;
+         en_C <= 1'b0;
+         waiting <= 1'b0;
+         load_addr <= 1'b0;
+         halt <= 1;
+         
+        end
+
+
+
+        //reset fetch sequence 
+        if (~signal) begin
+
+        case (state)
+        `rst1 : {next, load_pc, clear_pc, sel_addr, ram_w_en} <= {`rst2, 1'b1,1'b1,1'b1,1'b0};
+        `rst2 : {next, load_pc, clear_pc} <= {`rst3, 1'b0, 1'b0};
+        `rst3 : {next, load_ir} <= {`rst4, 1'b1};
+        `rst4 : {next, load_ir, signal} <= {`wait, 1'b0,1'b1};
+        endcase
+        end
+
+		else if (halt) begin
+        
+        instruction <= {opcode,ALU_op};
+
+        casex (instruction)
+
+//move immediate
+				5'b11010 : begin
+
+          case (state)
+              `wait : {next,reg_sel,w_en,wb_sel,waiting} <= {`movI_one, 2'b10,1'b1,2'b10, 1'b0};
+              `movI_one : {waiting, signal,w_en, load_pc, signal, next} <= {1'b1,1'b0,1'b0, 1'b1, 1'b0, `rst2};
+            
+          endcase
+        end
+
+//MOV (1 reg to another)
+            5'b11000 : begin
+              case (state)
+                `wait : {next, reg_sel, en_B,waiting} <= {`mov1,2'b00,1'b1,1'b0};
+                `mov1 : {next,sel_B,sel_A,en_C} <= {`mov2,1'b0,1'b1,1'b1};
+                `mov2 : {next, wb_sel,w_en,reg_sel, en_C,en_B} <= {`finish ,2'b00,1'b1,2'b01,1'b0,1'b0};
+                `finish : {waiting, signal, en_C, w_en, load_pc, signal, next} <= { 1'b1,1'b0, 1'b0,1'b0, 1'b1, 1'b0, `rst2};
+              endcase
+
+            end
+//ADD/AND           
+            5'b101x0 : begin
+            case (state)
+            `wait : {next,reg_sel,en_A,en_B,waiting} <= {`loadB, 2'b00,1'b0,1'b1,1'b0};
+            `loadB : {next,reg_sel,en_A,en_B} <= {`loadA, 2'b10, 1'b1,1'b0};
+            `loadA : {next, sel_A,sel_B,en_C} <= {`cal, 1'b0,1'b0,1'b1};
+            `cal : {next, wb_sel,w_en,reg_sel,en_A,en_C,en_B} <= {`finish, 2'b00, 1'b1,2'b01,1'b0,1'b0,1'b0, 1'b1, 1'b0, `rst2};
+            `finish : { waiting, signal, w_en, load_pc, signal, next} <= {1'b1,1'b0, 1'b0};
+            endcase
+
+              
+            end
+//CMP
+            5'b10101 : begin
+              case (state)
+            `wait : {next,reg_sel,en_A,en_B,waiting} <= {`loadB, 2'b00,1'b0,1'b1,1'b0};
+            `loadB : {next,reg_sel,en_A,en_B} <= {`loadA, 2'b10, 1'b1,1'b0};
+            `loadA : {next, sel_A,sel_B, en_status} <= {`enable, 1'b0,1'b0,1'b1}; //status should output on the next rising edge, waiting goes high early
+            `enable : { en_status, signal,en_A,en_C,en_B,waiting, load_pc, signal, next} <= { 1'b0, 1'b0,1'b0,1'b0,1'b0,1'b1, 1'b1, 1'b0, `rst2};
+
+
+              endcase
+
+            end
+//MVN           
+            5'b10111 : begin
+              case (state)
+              `wait : {next,reg_sel,en_A,en_B,waiting} <= {`loadB, 2'b00,1'b0,1'b1,1'b0};
+              `loadB : {next, sel_A,sel_B,en_C} <= {`cal, 1'b0,1'b0,1'b1};
+              `cal : {next, wb_sel,w_en,reg_sel} <= {`finish, 2'b00, 1'b1,2'b01};
+              `finish : { waiting, signal, w_en,en_A,en_C,en_B, load_pc, signal, next} <= { 1'b1,1'b0,1'b0,1'b0,1'b0,1'b0, 1'b1, 1'b0, `rst2};
+              endcase
+            end
+
+            5'b11100 : begin
+            
+            case (state)
+            `wait : {next, halt} <= {`wait, 1'b0};
+
+            endcase
+
+            end
+
+            default : next <= `wait; //might be an issue
+            
+            
+			endcase
+    end 
+	end
+    
+
 endmodule: controller
 
 module datapath(input clk, input [15:0] mdata, input [7:0] pc, input [1:0] wb_sel,
@@ -227,4 +363,3 @@ module ALU(input [15:0] val_A, input [15:0] val_B, input [1:0] ALU_op, output [1
 	  
   end
 endmodule: ALU
-
