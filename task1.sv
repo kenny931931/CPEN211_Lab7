@@ -1,8 +1,17 @@
 module task1(input clk, input rst_n, input [7:0] start_pc, output[15:0] out);
   // your implementation here
+  wire ram_w_en, N, V, Z;
+  wire [7:0] ram_addr;
+  wire [15:0] ram_r_data, ram_w_data;
+  
+  cpu(clk, rst_n, start_pc, ram_r_data,
+	  waiting, out, ram_w_en, ram_addr, N, V, Z);
+  
+  ram(clk, ram_w_en, ram_addr, ram_addr, ram_w_data, ram_r_data);
+  
 endmodule: task1
 
-module cpu(input clk, input rst_n, input start, input [15:0] instr, input [7:0] start_pc, input [15:0] ram_r_data,
+module cpu(input clk, input rst_n, input [7:0] start_pc, input [15:0] ram_r_data,
            output waiting, output [15:0] out, output RAM_w_en, output [7:0] RAM_addr, output N, output V, output Z);
   // your implementation here
   reg [15:0] f_instr;
@@ -27,7 +36,7 @@ module cpu(input clk, input rst_n, input start, input [15:0] instr, input [7:0] 
 		r_addr, w_addr);
 		
   // Controller FSM
-  controller c(clk, rst_n, start,
+  controller c(clk, rst_n,
         opcode, op, shift_op,
 		z, n, v,
 		w,
