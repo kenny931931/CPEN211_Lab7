@@ -34,7 +34,22 @@ module tb_task3(output err);
 	  num_fails = num_fails+1;
 	end
   endtask
-  
+
+/*	
+  task test(input signed [15:0] exp, int delay);
+    #30; // 3 clock cycle for fetch
+	#delay; // variable delay for execution
+	assert(out === exp) begin
+	  $display("[PASS]: val is %-d", exp);
+	  num_passes = num_passes + 1;
+	end else begin
+	  $error("[FAIL] val is %-d (expected %-d)", out, exp);
+	  outErr = 1'b1;
+	  num_fails = num_fails+1;
+	end
+  endtask
+*/
+
   //===== TEST =====
   initial begin
     #1; // offset timing
