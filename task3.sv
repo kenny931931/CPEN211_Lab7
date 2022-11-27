@@ -2,12 +2,12 @@ module task3(input clk, input rst_n, input [7:0] start_pc, output[15:0] out);
   // your implementation here
   wire ram_w_en, N, V, Z;
   wire [7:0] ram_addr;
-  wire [15:0] ram_r_data, ram_w_data;
+  wire [15:0] ram_r_data;
   
   cpu c(clk, rst_n, start_pc, ram_r_data,
 	  waiting, out, ram_w_en, ram_addr, N, V, Z);
   
-  ram r(clk, ram_w_en, ram_addr, ram_addr, ram_w_data, ram_r_data);
+  ram r(clk, ram_w_en, ram_addr, ram_addr, out, ram_r_data);
   
 endmodule: task3
 
@@ -219,7 +219,7 @@ always_ff @( posedge clk ) begin
             `wait : {next,reg_sel,en_A,en_B,waiting} <= {`loadB, 2'b00,1'b0,1'b1,1'b0};
             `loadB : {next,reg_sel,en_A,en_B} <= {`loadA, 2'b10, 1'b1,1'b0};
             `loadA : {next, sel_A,sel_B, en_status} <= {`enable, 1'b0,1'b0,1'b1}; //status should output on the next rising edge, waiting goes high early
-            `enable : { en_status, signal,en_A,en_C,en_B,waiting, load_pc, signal, next} <= { 1'b0, 1'b0,1'b0,1'b0,1'b0,1'b1, 1'b1, `rst2};
+            `enable : { en_status, signal,en_A,en_C,en_B,waiting, load_pc, next} <= { 1'b0, 1'b0,1'b0,1'b0,1'b0,1'b1, `rst2};
 
 
               endcase
@@ -245,12 +245,12 @@ always_ff @( posedge clk ) begin
 //LDR
 			5'b01100 : begin
 			  case (state)
-			  `wait : {next, reg_sel, en_A, sel_B, waiting} <= {`loadA, 2'b10, 1'b1, 1'b1, 1'b0};
-			  `loadA : {next, en_A, en_C, sel_B} <= {`cal, 1'b0, 1'b1, 1'b0};
-			  `cal : {next, en_C, load_addr, sel_addr} <= {`loadAddr, 1'b0, 1'b1, 1'b0};
-			  `loadAddr : {next, load_addr, sel_addr} <= {`loadRAM, 1'b0, 1'b1};
-			  `loadRAM : {next,reg_sel,w_en,wb_sel} <= {`movI_one, 2'b01,1'b1,2'b11};
-			  `movI_one : {next, w_en, waiting} <= {`rst2, 1'b0, 1'b1};
+			  `wait : {next, reg_sel, en_A, waiting} <= {`loadA, 2'b10, 1'b1, 1'b0};
+			  `loadA : {next, en_A, en_C, sel_B} <= {`cal, 1'b0, 1'b1, 1'b1};
+			  `cal : {next, en_C, load_addr, sel_B, sel_addr} <= {`loadAddr, 1'b0, 1'b1, 1'b0, 1'b0};
+			  `loadAddr : {next, load_addr} <= {`loadRAM, 1'b0};
+			  `loadRAM : {next,reg_sel,w_en, sel_addr, wb_sel} <= {`movI_one, 2'b01,1'b1, 1'b1, 2'b11};
+			  `movI_one : {next, w_en, load_pc, signal, waiting} <= {`rst2, 1'b0, 1'b1, 1'b0, 1'b1};
 			  endcase
             end
 			
@@ -261,7 +261,7 @@ always_ff @( posedge clk ) begin
 			  `loadA : {next, en_A, en_B, en_C, sel_A, sel_B, reg_sel} <= {`cal, 1'b0, 1'b1, 1'b1, 1'b0, 1'b1, 2'b01};
 			  `cal : {next, en_B, load_addr, sel_A, sel_B, sel_addr} <= {`loadAddr, 1'b0, 1'b1, 1'b1, 1'b0, 1'b0};
 			  `loadAddr : {next, en_C, load_addr, sel_A, ram_w_en} <= {`loadRAM, 1'b0, 1'b0, 1'b0, 1'b1};
-			  `loadRAM : {next, ram_w_en, sel_addr, waiting} <= {`rst2, 1'b0, 1'b1, 1'b1};
+			  `loadRAM : {next, ram_w_en, load_pc, sel_addr, signal, waiting} <= {`rst2, 1'b0, 1'b1, 1'b1, 1'b0, 1'b1};
 			  endcase
             end
 
