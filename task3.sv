@@ -89,7 +89,7 @@ module idecoder(input [15:0] ir, input [1:0] reg_sel,
 		sximm5 = ir[4] == 1 ? {-11'b1,ir[4:0]} : {11'b0,ir[4:0]};
 		sximm8 = ir[7] == 1 ? {-8'b1,ir[7:0]} : {8'b0,ir[7:0]};
 
-        shift_op = ir[4:3];
+        shift_op = opcode == 3'b100 ? 2'b00 : ir[4:3];
 
         case(reg_sel)
                 2'b10: {r_addr,w_addr} = {ir[10:8],ir[10:8]};
@@ -97,8 +97,6 @@ module idecoder(input [15:0] ir, input [1:0] reg_sel,
                 2'b00: {r_addr,w_addr} = {ir[2:0],ir[2:0]};
                 default: {r_addr,w_addr} = {6'b000000};
         endcase
-            
-
   end
 endmodule: idecoder
 
@@ -239,10 +237,9 @@ always_ff @( posedge clk ) begin
 
 //Halt
             5'b11100 : begin
-            
-            case (state)
-            `wait : {next, halt} <= {`wait, 1'b0};
-            endcase
+				case (state)
+				`wait : {next, halt} <= {`wait, 1'b0};
+				endcase
 			end
 
 //LDR
@@ -260,13 +257,11 @@ always_ff @( posedge clk ) begin
 //STR
 			5'b10000 : begin
 			  case (state)
-			  `wait : {next, reg_sel, en_A, sel_B, waiting} <= {`loadA, 2'b10, 1'b1, 1'b1, 1'b0};
-			  `loadA : {next, en_A, en_C, sel_B} <= {`cal, 1'b0, 1'b1, 1'b0};
-			  `cal : {next, en_C, load_addr, sel_addr} <= {`loadAddr, 1'b0, 1'b1, 1'b0};
-			  `loadAddr : {next, load_addr, reg_sel, en_A} <= {`mov1, 1'b0, 2'b01, 1'b1};
-			  `mov1 : {next, en_A, en_C} <= {`mov2, 1'b0, 1'b1};
-			  `mov2 : {next, en_C, ram_w_en} <= {`loadRAM, 1'b0, 1'b1};
-			  `loadRAM : {next, ram_w_en, waiting} <= {`rst2, 1'b0, 1'b1};
+			  `wait : {next, reg_sel, en_A, waiting} <= {`loadA, 2'b10, 1'b1, 1'b0};
+			  `loadA : {next, en_A, en_B, en_C, sel_A, sel_B, reg_sel} <= {`cal, 1'b0, 1'b1, 1'b1, 1'b0, 1'b1, 2'b01};
+			  `cal : {next, en_B, load_addr, sel_A, sel_B, sel_addr} <= {`loadAddr, 1'b0, 1'b1, 1'b1, 1'b0, 1'b0};
+			  `loadAddr : {next, en_C, load_addr, sel_A, ram_w_en} <= {`loadRAM, 1'b0, 1'b0, 1'b0, 1'b1};
+			  `loadRAM : {next, ram_w_en, sel_addr, waiting} <= {`rst2, 1'b0, 1'b1, 1'b1};
 			  endcase
             end
 
