@@ -65,31 +65,45 @@ module tb_task3(output err);
 
     end  
 	
-	// $display("\n=== TEST 2 ===");
-  //   begin
-  //     // test 2
-	//   /*
-	//     INSTRUCTION				CYCLE
-	//     @04 MOV R0, #56			3+2 = 5
-	// 	@05 MOV R1, #-17		3+2 = 5
-	// 	@06 ADD R0, R0, R1		3+4 = 7
-	// 	@07 MVN R2, R0			3+3 = 5
-	// 	@08 AND R3, R2, R1		3+4 = 7
-	// 	@09 MOV R4, R3			3+3 = 6
-	// 	@0a HALT				inf
-	//   */
+	  $display("\n=== TEST 2 ===");
+    begin
+      // test 2
+	  /*
+	    INSTRUCTION				CYCLE
+	    	@b0 MOV R0, #d0			3+2 = 5
+	    	@b1 MOV R1, #d0			3+2 = 5
+		@b2 MOV R2, #d0			3+2 = 5
+	    	@b3 MOV R3, #d0			3+2 = 5
+		@b4 MOV R4, #78			3+2 = 5
+	    	@b5 MOV R5, #39			3+2 = 5
+		@b6 MOV R6, #98			3+2 = 5
+	    	@b7 MOV R7, #-126		3+2 = 5
+		@b8 STR R4, [R0, #0]		3+5 = 8
+		@b9 STR R5, [R1, #1]		3+5 = 8
+		@ba STR R6, [R2, #2]		3+5 = 8
+		@bb STR R7, [R3, #3]		3+5 = 8
+		@bc LDR R0, [R0, #0]		3+6 = 9
+		@bd LDR R1, [R1, #1]		3+6 = 9
+		@be LDR R2, [R2, #2]		3+6 = 9
+		@bf LDR R3, [R3, #3]		3+6 = 9
+		@c0 MOV R0, R0			3+4 = 7
+		@c1 MOV R1, R1			3+4 = 7
+		@c2 MOV R2, R2			3+4 = 7
+		@c3 MOV R3, R3			3+4 = 7
+	    	@c4 HALT			inf
+		d0 - d3 : store data
+	  */  
 	  
-	//   restartf();
-	//   start_pc = 8'h04;
-	//   test(16'd6, 20);
-	//   test(16'd6, 20);
-	//   test(16'd39, 50);
-	//   test(-16'd40, 40);
-	//   test(-16'd56, 50);
-	//   test(-16'd56, 40);
-	//   test(-16'd56, 110);
-	//   test(-16'd56, 110);
-  //   end
+/*	  restartf();
+	  start_pc = 8'hb0;
+	  #1080; // move immediate
+	  test(16'd78, 40);
+	  test(16'd39, 40);
+	  test(16'd98, 40);
+	  test(-16'd126, 40);
+	  test(-16'd126, 110);
+	  test(-16'd126, 110);
+*/    end  
 	
     $display("\n\n==== TEST SUMMARY ====");
     $display("  TEST COUNT: %-5d", num_passes + num_fails);
