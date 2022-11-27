@@ -1,4 +1,4 @@
-0000000000000000module tb_task2(output err);
+module tb_task2(output err);
   // your implementation here
   
   reg outErr = 0;
