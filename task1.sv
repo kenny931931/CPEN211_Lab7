@@ -80,7 +80,7 @@ module idecoder(input [15:0] ir, input [1:0] reg_sel,
 				output reg [15:0] sximm5, output reg [15:0] sximm8,
                 output reg[2:0] r_addr, output reg[2:0] w_addr);
   
-   always_comb begin
+  always_comb begin
         
         opcode = ir[15:13];
         ALU_op = ir[12:11];
@@ -89,7 +89,7 @@ module idecoder(input [15:0] ir, input [1:0] reg_sel,
 		sximm5 = ir[4] == 1 ? {-11'b1,ir[4:0]} : {11'b0,ir[4:0]};
 		sximm8 = ir[7] == 1 ? {-8'b1,ir[7:0]} : {8'b0,ir[7:0]};
 
-        shift_op = ir[4:3];
+        shift_op = opcode == 3'b100 ? 2'b00 : ir[4:3];
 
         case(reg_sel)
                 2'b10: {r_addr,w_addr} = {ir[10:8],ir[10:8]};
@@ -97,8 +97,6 @@ module idecoder(input [15:0] ir, input [1:0] reg_sel,
                 2'b00: {r_addr,w_addr} = {ir[2:0],ir[2:0]};
                 default: {r_addr,w_addr} = {6'b000000};
         endcase
-            
-
   end
 endmodule: idecoder
 
@@ -240,8 +238,6 @@ always_ff @( posedge clk ) begin
             case (state)
             `wait : {next, halt} <= {`wait, 1'b0};
             endcase
-
-//LDR
 
             end
 
