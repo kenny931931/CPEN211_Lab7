@@ -25,7 +25,7 @@ module tb_task1(output err);
   task test(input signed [15:0] exp, int delay);
     #30; // 3 clock cycle for fetch
 	#delay; // variable delay for execution
-	assert(out == exp) begin
+	assert(out === exp) begin
 	  $display("[PASS]: val is %-d", exp);
 	  num_passes = num_passes + 1;
 	end else begin
@@ -53,10 +53,10 @@ module tb_task1(output err);
 	  restartf();
 	  start_pc = 8'h00;
 	  test(16'bx, 20);
-	  test(16'd39, 30);
-	  test(16'd6, 40);
-	  test(16'd6, 100);
-	  test(16'd6, 100);
+	  test(16'd39, 40);
+	  test(16'd6, 50);
+	  test(16'd6, 110);
+	  test(16'd6, 110);
     end  
 	
 	$display("\n=== TEST 2 ===");
@@ -75,11 +75,11 @@ module tb_task1(output err);
 	  
 	  restartf();
 	  start_pc = 8'h04;
-	  test(16'bx, 20);
-	  test(16'bx, 20);
-	  test(16'd39, 40);
-	  test(-16'd40, 30);
-	  test(-16'd56, 40);
+	  test(16'd6, 20);
+	  test(16'd6, 20);
+	  test(16'd39, 50);
+	  test(-16'd40, 40);
+	  test(-16'd56, 50);
 	  test(-16'd56, 40);
 	  test(-16'd56, 100);
 	  test(-16'd56, 100);
