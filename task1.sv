@@ -134,12 +134,11 @@ module controller(input clk, input rst_n,
 reg [3:0] next;
 reg signal =0;
 reg [3:0] state;
-reg [4:0] instruction;
+wire [4:0] instruction;
 assign state = next;
 reg waiting; 
 reg halt; 
-
-reg reset_en; 
+assign instruction = {opcode,ALU_op};
 
 
 always_ff @( posedge clk ) begin 
@@ -178,8 +177,7 @@ always_ff @( posedge clk ) begin
 
 		else if (halt) begin
         
-        instruction <= {opcode,ALU_op};
-
+     
         casex (instruction)
 
 //move immediate
@@ -208,8 +206,8 @@ always_ff @( posedge clk ) begin
             `wait : {next,reg_sel,en_A,en_B,waiting} <= {`loadB, 2'b00,1'b0,1'b1,1'b0};
             `loadB : {next,reg_sel,en_A,en_B} <= {`loadA, 2'b10, 1'b1,1'b0};
             `loadA : {next, sel_A,sel_B,en_C} <= {`cal, 1'b0,1'b0,1'b1};
-            `cal : {next, wb_sel,w_en,reg_sel,en_A,en_C,en_B} <= {`finish, 2'b00, 1'b1,2'b01,1'b0,1'b0,1'b0, 1'b1, 1'b0, `rst2};
-            `finish : { waiting, signal, w_en, load_pc, signal, next} <= {1'b1,1'b0, 1'b0};
+            `cal : {next, wb_sel,w_en,reg_sel,en_A,en_C,en_B} <= {`finish, 2'b00, 1'b1,2'b01,1'b0,1'b0,1'b0};
+            `finish : { waiting, signal, w_en, load_pc, next} <= {1'b1,1'b0, 1'b0, 1'b1, `rst2};
             endcase
 
               
@@ -220,7 +218,7 @@ always_ff @( posedge clk ) begin
             `wait : {next,reg_sel,en_A,en_B,waiting} <= {`loadB, 2'b00,1'b0,1'b1,1'b0};
             `loadB : {next,reg_sel,en_A,en_B} <= {`loadA, 2'b10, 1'b1,1'b0};
             `loadA : {next, sel_A,sel_B, en_status} <= {`enable, 1'b0,1'b0,1'b1}; //status should output on the next rising edge, waiting goes high early
-            `enable : { en_status, signal,en_A,en_C,en_B,waiting, load_pc, signal, next} <= { 1'b0, 1'b0,1'b0,1'b0,1'b0,1'b1, 1'b1, 1'b0, `rst2};
+            `enable : { en_status, signal,en_A,en_C,en_B,waiting, load_pc, signal, next} <= { 1'b0, 1'b0,1'b0,1'b0,1'b0,1'b1, 1'b1, `rst2};
 
 
               endcase
@@ -232,16 +230,18 @@ always_ff @( posedge clk ) begin
               `wait : {next,reg_sel,en_A,en_B,waiting} <= {`loadB, 2'b00,1'b0,1'b1,1'b0};
               `loadB : {next, sel_A,sel_B,en_C} <= {`cal, 1'b0,1'b0,1'b1};
               `cal : {next, wb_sel,w_en,reg_sel} <= {`finish, 2'b00, 1'b1,2'b01};
-              `finish : { waiting, signal, w_en,en_A,en_C,en_B, load_pc, signal, next} <= { 1'b1,1'b0,1'b0,1'b0,1'b0,1'b0, 1'b1, 1'b0, `rst2};
+              `finish : { waiting, signal, w_en,en_A,en_C,en_B, load_pc, next} <= { 1'b1,1'b0,1'b0,1'b0,1'b0,1'b0, 1'b1, `rst2};
               endcase
             end
 
+//Halt
             5'b11100 : begin
             
             case (state)
             `wait : {next, halt} <= {`wait, 1'b0};
-
             endcase
+
+//LDR
 
             end
 
