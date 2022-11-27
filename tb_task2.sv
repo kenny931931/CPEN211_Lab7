@@ -23,7 +23,7 @@ module tb_task2(output err);
   endtask
   
   task test(input signed [15:0] exp);
-    #130; // after 10 cycles (6 for ldr and 4 for mov)
+    #160; 
 	    
 	assert(out === exp) begin
 	  $display("[PASS]: val is %-d", exp);
@@ -52,7 +52,7 @@ module tb_task2(output err);
 	  
 	  restartf();
 	  start_pc = 8'h0b;
-    #480; //let reg's fill up with 253
+    #435; //let reg's fill up with 253
 	  test(16'b1111111111111111);
 	  test(16'b0000000000000000);
     //test all registers 
