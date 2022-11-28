@@ -1,3 +1,5 @@
+`timescale 1 ps / 1 ps
+
 module tb_task3(output err);
   // your implementation here
   
@@ -10,7 +12,7 @@ module tb_task3(output err);
   reg [7:0] start_pc;
   reg signed [15:0] out;
   
-  task1 DUT(.clk(clk), .rst_n(rst_n), .start_pc(start_pc), .out(out));
+  task3 DUT(.clk(clk), .rst_n(rst_n), .start_pc(start_pc), .out(out));
   
   initial begin
     clk = 1'b0;
@@ -35,8 +37,7 @@ module tb_task3(output err);
 	end
   endtask
 
-/*	
-  task test(input signed [15:0] exp, int delay);
+  task test2(input signed [15:0] exp, int delay);
     #30; // 3 clock cycle for fetch
 	#delay; // variable delay for execution
 	assert(out === exp) begin
@@ -48,7 +49,6 @@ module tb_task3(output err);
 	  num_fails = num_fails+1;
 	end
   endtask
-*/
 
   //===== TEST =====
   initial begin
@@ -66,10 +66,10 @@ module tb_task3(output err);
 	  */
 	  
 	  restartf();
-	  start_pc = 8'h29;
+	  start_pc = 8'h2a;
     #1040; 
 	  
-	  test(16'b0000000000000000);
+	test(16'b0000000000000000);
     test(16'b0000000000000001);
     test(16'b0000000000000010);
     test(16'b0000000000000011);
@@ -78,6 +78,7 @@ module tb_task3(output err);
     test(16'b0000000000000110);
     test(16'b0000000000000111);
 
+	#50;
     end  
 	
 	  $display("\n=== TEST 2 ===");
@@ -85,40 +86,40 @@ module tb_task3(output err);
       // test 2
 	  /*
 	    INSTRUCTION				CYCLE
-	    	@b0 MOV R0, #d0			3+2 = 5
-	    	@b1 MOV R1, #d0			3+2 = 5
+	    @b0 MOV R0, #d0			3+2 = 5
+	    @b1 MOV R1, #d0			3+2 = 5
 		@b2 MOV R2, #d0			3+2 = 5
-	    	@b3 MOV R3, #d0			3+2 = 5
+	    @b3 MOV R3, #d0			3+2 = 5
 		@b4 MOV R4, #78			3+2 = 5
-	    	@b5 MOV R5, #39			3+2 = 5
+	    @b5 MOV R5, #39			3+2 = 5
 		@b6 MOV R6, #98			3+2 = 5
-	    	@b7 MOV R7, #-126		3+2 = 5
-		@b8 STR R4, [R0, #0]		3+5 = 8
-		@b9 STR R5, [R1, #1]		3+5 = 8
-		@ba STR R6, [R2, #2]		3+5 = 8
-		@bb STR R7, [R3, #3]		3+5 = 8
-		@bc LDR R0, [R0, #0]		3+6 = 9
-		@bd LDR R1, [R1, #1]		3+6 = 9
-		@be LDR R2, [R2, #2]		3+6 = 9
-		@bf LDR R3, [R3, #3]		3+6 = 9
+	    @b7 MOV R7, #-126		3+2 = 5
+		@b8 STR R4, [R0, #0]	3+5 = 8
+		@b9 STR R5, [R1, #1]	3+5 = 8
+		@ba STR R6, [R2, #2]	3+5 = 8
+		@bb STR R7, [R3, #3]	3+5 = 8
+		@bc LDR R0, [R0, #0]	3+6 = 9
+		@bd LDR R1, [R1, #1]	3+6 = 9
+		@be LDR R2, [R2, #2]	3+6 = 9
+		@bf LDR R3, [R3, #3]	3+6 = 9
 		@c0 MOV R0, R0			3+4 = 7
 		@c1 MOV R1, R1			3+4 = 7
 		@c2 MOV R2, R2			3+4 = 7
 		@c3 MOV R3, R3			3+4 = 7
-	    	@c4 HALT			inf
+	    @c4 HALT				inf
 		d0 - d3 : store data
 	  */  
 	  
-/*	  restartf();
 	  start_pc = 8'hb0;
+	  restartf();
 	  #1080; // move immediate
-	  test(16'd78, 40);
-	  test(16'd39, 40);
-	  test(16'd98, 40);
-	  test(-16'd126, 40);
-	  test(-16'd126, 110);
-	  test(-16'd126, 110);
-*/    end  
+	  test2(16'd78, 40);
+	  test2(16'd39, 40);
+	  test2(16'd98, 40);
+	  test2(-16'd126, 40);
+	  test2(-16'd126, 110);
+	  test2(-16'd126, 110);
+    end  
 	
     $display("\n\n==== TEST SUMMARY ====");
     $display("  TEST COUNT: %-5d", num_passes + num_fails);
