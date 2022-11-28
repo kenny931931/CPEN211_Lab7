@@ -10,7 +10,7 @@ module tb_task2(output err);
   reg [7:0] start_pc;
   reg signed [15:0] out;
   
-  task1 DUT(.clk(clk), .rst_n(rst_n), .start_pc(start_pc), .out(out));
+  task2 DUT(.clk(clk), .rst_n(rst_n), .start_pc(start_pc), .out(out));
   
   initial begin
     clk = 1'b0;
