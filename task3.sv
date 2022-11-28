@@ -245,7 +245,7 @@ always_ff @( posedge clk ) begin
 //LDR
 			5'b01100 : begin
 			  case (state)
-			  `wait : {next, reg_sel, en_A, waiting} <= {`loadA, 2'b10, 1'b1, 1'b0};
+				  `wait : {next, reg_sel, en_A, sel_A, waiting} <= {`loadA, 2'b10, 1'b1, 1'b0, 1'b0};
 			  `loadA : {next, en_A, en_C, sel_B} <= {`cal, 1'b0, 1'b1, 1'b1};
 			  `cal : {next, en_C, load_addr, sel_B, sel_addr} <= {`loadAddr, 1'b0, 1'b1, 1'b0, 1'b0};
 			  `loadAddr : {next, load_addr} <= {`loadRAM, 1'b0};
