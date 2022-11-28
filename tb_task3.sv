@@ -112,7 +112,7 @@ module tb_task3(output err);
 	  
 	  start_pc = 8'hb0;
 	  restartf();
-	  #1080; // move immediate
+	  #1080;
 	  test2(16'd78, 40);
 	  test2(16'd39, 40);
 	  test2(16'd98, 40);
